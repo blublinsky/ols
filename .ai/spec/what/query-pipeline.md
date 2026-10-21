@@ -62,7 +62,7 @@ End-to-end flow for processing a user question: from console submission through 
     - Tool output is truncated to fit the tool budget.
     - [PLANNED: OLS-3928] The service inspects each model-visible result or error before SSE emission or model reinjection. See `tool-result-inspection.md`.
     - Results are fed back to the LLM for the next iteration only after all results in the concurrent round pass inspection.
-27. The tool-calling loop runs up to `max_iterations` (ask=5, troubleshooting=15 by default). On the final iteration, tools are removed to force a text-only answer.
+27. The tool-calling loop runs up to `max_iterations` (ask=5, troubleshooting=35 by default). The final iteration must not execute further tool calls. For Vertex Gemini, reaching the iteration limit with tools configured triggers a tool-free synthesis request. If the synthesis instruction exceeds the remaining token budget or the request emits no non-empty text, the service emits a fallback response.
 28. Streaming events are emitted throughout: `token`, `reasoning`, `tool_call`, `tool_result`, `approval_required`.
 
 ### Stage 8 — Response Storage & Quota (lightspeed-service)
