@@ -52,7 +52,7 @@ Two confirmed vulnerabilities in the current implementation motivate this spec:
 
  2. **Console access review.** The agentic console MUST check `patch` on `agenticruns` in the run namespace before showing or enabling `Stop run`. It MUST NOT inspect group membership or use `patch agenticrunapprovals` as a proxy. The actual patch remains independently authorized by the API server.
 
- 3. **Termination revocation.** Per-run cancellation and global suspension MUST revoke all sandbox access associated with the targeted workload, including sandbox ServiceAccount reader bindings and execution Roles/RoleBindings and ClusterRoles/ClusterRoleBindings. Revocation errors MUST remain retryable after terminal status; the system MUST NOT report global suspension fully activated while sandbox access remains. See `agentic-run-termination.md`.
+ 3. **Termination revocation.** [PLANNED: OLS-4131] Per-run cancellation and global suspension MUST revoke all sandbox access associated with the targeted workload, including sandbox ServiceAccount reader bindings and execution Roles/RoleBindings and ClusterRoles/ClusterRoleBindings. Both stop paths set a run-level `Stopping` condition when accepted and record the stopped outcome (`Failed / CancelledByUser` or `EmergencyStopped`) only after workload and access removal is confirmed; once recorded, the outcome is final. Revocation errors MUST remain retryable while the run is `Stopping` and after the outcome is recorded; the system MUST NOT report global suspension fully activated while sandbox access remains or any run the suspension must stop is still non-terminal. See `agentic-run-termination.md`.
 
 ## Repo Ownership
 
@@ -88,6 +88,6 @@ The following child repo specs describe behavior that this spec supersedes or au
 | --- | --- |
 | [DONE: OLS-3295] | Rename `Proposal` → `AgenticRun`, `ProposalApproval` → `AgenticRunApproval` across CRDs, RBAC resources, and SA naming |
 | [PLANNED: OLS-3298] | Authorize per-run cancellation through effective `patch agenticruns`; add a separate console access review and revoke sandbox access until confirmed complete. |
-| [PLANNED: OLS-4018] | Revoke access for every active managed sandbox during global suspension and keep suspension Draining while revocation is incomplete. |
+| [PLANNED: OLS-4018] | Revoke access for every active managed sandbox during global suspension and keep the `Suspended` condition reason `Stopping` while revocation is incomplete. |
 | [PLANNED] | Namespace-scoped approval delegation: allow non-cluster-admins to approve runs scoped to namespaces where they have equivalent RBAC. Requires either a ValidatingAdmissionWebhook with SubjectAccessReview or a more granular ClusterRole structure. |
 | [PLANNED] | Analysis cluster-reader SA: a fixed `lightspeed-analyst` ClusterRoleBinding with read-only cluster access for analysis steps that need to query cluster state directly. Separate from per-run execution SA. |
